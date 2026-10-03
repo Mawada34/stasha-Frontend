@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Admin Dashboard — Stasha Interior</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --gold:#B8965A;--gold-light:#D4AF72;
+  --dark:#231F1A;--dark2:#2C2721;--dark3:#37312A;
+  --cream:#F9F5EE;--warm:#E8DEC8;--text-muted:#AFA48F;
+  --error:#C4645A;--success:#7A9B76;
+}
+body{background:var(--dark);color:var(--cream);font-family:'Montserrat',sans-serif;min-height:100vh;}
+
+/* ---------- Top bar ---------- */
+.topbar{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:1.2rem 2rem;border-bottom:1px solid rgba(184,150,90,0.15);
+  background:var(--dark2);
+}
+.logo-mark{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;letter-spacing:0.2em;color:var(--gold-light);}
+.logo-mark span{font-style:italic;color:var(--cream);}
+.logout-btn{
+  background:none;border:1px solid rgba(184,150,90,0.4);color:var(--text-muted);
+  padding:0.5rem 1.2rem;font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;
+  cursor:pointer;font-family:'Montserrat',sans-serif;transition:all 0.3s;
+}
+.logout-btn:hover{border-color:var(--gold);color:var(--gold);}
+
+/* ---------- Tabs ---------- */
+.tabs{
+  display:flex;gap:0;border-bottom:1px solid rgba(184,150,90,0.1);
+  padding:0 2rem;overflow-x:auto;background:var(--dark2);
+}
+.tab-btn{
+  background:none;border:none;color:var(--text-muted);
+  padding:1rem 1.4rem;font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;
+  cursor:pointer;font-family:'Montserrat',sans-serif;border-bottom:2px solid transparent;
+  white-space:nowrap;transition:all 0.25s;
+}
+.tab-btn.active{color:var(--gold);border-bottom-color:var(--gold);}
+.tab-btn:hover{color:var(--gold-light);}
+
+/* ---------- Content area ---------- */
+.content{padding:2rem;max-width:1100px;margin:0 auto;}
+.panel{display:none;}
+.panel.active{display:block;}
+
+.panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;}
+.panel-title{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:300;color:var(--cream);}
+.panel-title em{font-style:italic;color:var(--gold-light);}
+.btn-add{
+  background:var(--gold);color:var(--dark);border:none;padding:0.65rem 1.4rem;
+  font-size:0.72rem;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;
+  font-family:'Montserrat',sans-serif;font-weight:500;transition:background 0.3s;
+}
+.btn-add:hover{background:var(--gold-light);}
+
+/* ---------- Item cards (list view) ---------- */
+.item-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem;}
+.item-card{
+  background:var(--dark2);border:1px solid rgba(184,150,90,0.12);overflow:hidden;
+}
+.item-thumb{width:100%;height:150px;background-size:cover;background-position:center;background-color:var(--dark3);}
+.item-body{padding:1rem;}
+.item-title{font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--cream);margin-bottom:0.3rem;}
+.item-sub{font-size:0.72rem;color:var(--gold);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.8rem;}
+.item-actions{display:flex;gap:0.5rem;}
+.item-actions button{
+  flex:1;background:none;border:1px solid rgba(184,150,90,0.3);color:var(--text-muted);
+  padding:0.45rem;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;
+  cursor:pointer;font-family:'Montserrat',sans-serif;transition:all 0.3s;
+}
+.item-actions .edit-btn:hover{border-color:var(--gold);color:var(--gold);}
+.item-actions .delete-btn:hover{border-color:var(--error);color:var(--error);}
+
+.empty-state{
+  text-align:center;padding:3rem;color:var(--text-muted);font-size:0.9rem;
+  border:1px dashed rgba(184,150,90,0.25);
+}
+
+/* ---------- Modal (add/edit form) ---------- */
+.modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);
+  align-items:center;justify-content:center;z-index:500;padding:1.5rem;
+}
+.modal-overlay.visible{display:flex;}
+.modal{
+  background:var(--dark2);border:1px solid rgba(184,150,90,0.2);
+  padding:2rem;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;
+}
+.modal h3{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:1.3rem;margin-bottom:1.5rem;color:var(--cream);}
+.field{margin-bottom:1.2rem;}
+.field label{display:block;font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);margin-bottom:0.5rem;}
+.field input[type="text"],.field input[type="number"],.field textarea,.field select{
+  width:100%;background:var(--dark);border:1px solid rgba(184,150,90,0.25);
+  color:var(--cream);padding:0.7rem 0.9rem;font-size:0.9rem;
+  font-family:'Montserrat',sans-serif;
+}
+.field textarea{resize:vertical;min-height:80px;}
+.field input:focus,.field textarea:focus{outline:none;border-color:var(--gold);}
+.field-file{
+  border:1px dashed rgba(184,150,90,0.35);padding:1rem;text-align:center;cursor:pointer;
+}
+.field-file input{display:none;}
+.file-status{font-size:0.75rem;color:var(--text-muted);margin-top:0.5rem;}
+.img-preview{width:100%;height:140px;background-size:cover;background-position:center;margin-top:0.7rem;display:none;}
+.modal-actions{display:flex;gap:0.8rem;margin-top:1.5rem;}
+.modal-actions button{
+  flex:1;padding:0.8rem;font-size:0.75rem;letter-spacing:0.14em;text-transform:uppercase;
+  cursor:pointer;font-family:'Montserrat',sans-serif;font-weight:500;border:none;
+}
+.btn-save{background:var(--gold);color:var(--dark);}
+.btn-save:hover{background:var(--gold-light);}
+.btn-save:disabled{opacity:0.6;cursor:not-allowed;}
+.btn-cancel{background:none;border:1px solid rgba(184,150,90,0.3) !important;color:var(--text-muted);}
+.btn-cancel:hover{color:var(--cream);}
+.modal-error{color:var(--error);font-size:0.8rem;margin-top:0.8rem;display:none;}
+.modal-error.visible{display:block;}
+
+.toast{
+  position:fixed;bottom:1.5rem;right:1.5rem;background:var(--success);color:var(--dark);
+  padding:0.9rem 1.5rem;font-size:0.85rem;z-index:600;display:none;font-weight:500;
+}
+.toast.visible{display:block;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo-mark">Stasha <span>Interior</span> — Admin</div>
+  <button class="logout-btn" id="logoutBtn">Logout</button>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="portfolio">Portfolio</button>
+  <button class="tab-btn" data-tab="testimonials">Testimonials</button>
+  <button class="tab-btn" data-tab="services">Services</button>
+  <button class="tab-btn" data-tab="content">Site Content</button>
+</div>
+
+<div class="content">
+
+  <!-- ===================== PORTFOLIO PANEL ===================== -->
+  <div class="panel active" id="panel-portfolio">
+    <div class="panel-header">
+      <div class="panel-title">Portfolio <em>Projects</em></div>
+      <button class="btn-add" id="addPortfolioBtn">+ Add Project</button>
+    </div>
+    <div class="item-grid" id="portfolioGrid">
+      <!-- populated by JS -->
+    </div>
+  </div>
+
+  <!-- ===================== OTHER TABS (placeholders for now) ===================== -->
+  <div class="panel" id="panel-testimonials">
+    <div class="panel-header">
+      <div class="panel-title">Client <em>Testimonials</em></div>
+      <button class="btn-add" id="addTestimonialBtn">+ Add Testimonial</button>
+    </div>
+    <div class="item-grid" id="testimonialsGrid"></div>
+  </div>
+
+  <div class="panel" id="panel-services">
+    <div class="panel-header">
+      <div class="panel-title">Our <em>Services</em></div>
+      <button class="btn-add" id="addServiceBtn">+ Add Service</button>
+    </div>
+    <div class="item-grid" id="servicesGrid"></div>
+  </div>
+
+  <div class="panel" id="panel-content">
+    <div class="panel-header"><div class="panel-title">Site <em>Content</em></div></div>
+
+    <div style="margin-bottom:2.5rem;">
+      <h4 style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:1.15rem;color:var(--gold-light);margin-bottom:1rem;">Hero Section</h4>
+      <form id="heroForm">
+        <div class="field"><label>Headline</label><input type="text" id="heroHeadline"/></div>
+        <div class="field"><label>Subheadline</label><textarea id="heroSubheadline"></textarea></div>
+        <div class="field"><label>Hero Video URL</label><input type="text" id="heroVideoUrl"/></div>
+        <div class="field"><label>Years of Experience (e.g. 12+)</label><input type="text" id="heroYears"/></div>
+        <div class="field"><label>Projects Count (e.g. 340+)</label><input type="text" id="heroProjects"/></div>
+        <div class="field"><label>Satisfaction % (e.g. 98%)</label><input type="text" id="heroSatisfaction"/></div>
+        <button type="submit" class="btn-save" style="width:auto;padding:0.7rem 2rem;">Save Hero</button>
+      </form>
+    </div>
+
+    <div style="margin-bottom:2.5rem;">
+      <h4 style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:1.15rem;color:var(--gold-light);margin-bottom:1rem;">About Section</h4>
+      <form id="aboutForm">
+        <div class="field">
+          <label>Image</label>
+          <div class="field-file" id="aboutFileTrigger">
+            <span id="aboutFileLabel">Click to choose an image</span>
+            <input type="file" id="aboutFile" accept="image/*"/>
+          </div>
+          <div class="file-status" id="aboutFileStatus"></div>
+          <div class="img-preview" id="aboutImgPreview"></div>
+          <input type="hidden" id="aboutImageUrl"/>
+        </div>
+        <div class="field"><label>Paragraph 1</label><textarea id="aboutParagraph1"></textarea></div>
+        <div class="field"><label>Paragraph 2</label><textarea id="aboutParagraph2"></textarea></div>
+        <div class="field"><label>Badge Number (e.g. 12)</label><input type="text" id="aboutBadgeNumber"/></div>
+        <button type="submit" class="btn-save" style="width:auto;padding:0.7rem 2rem;">Save About</button>
+      </form>
+    </div>
+
+    <div>
+      <h4 style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:1.15rem;color:var(--gold-light);margin-bottom:1rem;">Site Settings</h4>
+      <form id="settingsForm">
+        <div class="field"><label>Booking URL (Calendly)</label><input type="text" id="settingsBookingUrl"/></div>
+        <div class="field"><label>Footer Tagline</label><input type="text" id="settingsFooterTagline"/></div>
+        <div class="field"><label>Instagram URL</label><input type="text" id="settingsInstagram"/></div>
+        <div class="field"><label>Pinterest URL</label><input type="text" id="settingsPinterest"/></div>
+        <div class="field"><label>LinkedIn URL</label><input type="text" id="settingsLinkedin"/></div>
+        <button type="submit" class="btn-save" style="width:auto;padding:0.7rem 2rem;">Save Settings</button>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================== PORTFOLIO MODAL ===================== -->
+<div class="modal-overlay" id="portfolioModal">
+  <div class="modal">
+    <h3 id="portfolioModalTitle">Add Portfolio Project</h3>
+    <form id="portfolioForm">
+      <input type="hidden" id="portfolioId"/>
+
+      <div class="field">
+        <label>Title</label>
+        <input type="text" id="portfolioTitle" required/>
+      </div>
+
+      <div class="field">
+        <label>Category</label>
+        <select id="portfolioCategory" required>
+          <option value="residential">Residential</option>
+          <option value="commercial">Commercial</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Year</label>
+        <input type="number" id="portfolioYear" required/>
+      </div>
+
+      <div class="field">
+        <label>Image</label>
+        <div class="field-file" id="portfolioFileTrigger">
+          <span id="portfolioFileLabel">Click to choose an image</span>
+          <input type="file" id="portfolioFile" accept="image/*"/>
+        </div>
+        <div class="file-status" id="portfolioFileStatus"></div>
+        <div class="img-preview" id="portfolioImgPreview"></div>
+        <input type="hidden" id="portfolioImageUrl"/>
+      </div>
+
+      <div class="modal-error" id="portfolioModalError"></div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" id="portfolioCancelBtn">Cancel</button>
+        <button type="submit" class="btn-save" id="portfolioSaveBtn">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== TESTIMONIAL MODAL ===================== -->
+<div class="modal-overlay" id="testimonialModal">
+  <div class="modal">
+    <h3 id="testimonialModalTitle">Add Testimonial</h3>
+    <form id="testimonialForm">
+      <input type="hidden" id="testimonialId"/>
+      <div class="field"><label>Client Name</label><input type="text" id="testimonialClientName" required/></div>
+      <div class="field"><label>Role / Location</label><input type="text" id="testimonialRoleLocation" placeholder="e.g. Nairobi, Kenya"/></div>
+      <div class="field"><label>Project Type</label><input type="text" id="testimonialProjectType" placeholder="e.g. Residential · 2024"/></div>
+      <div class="field"><label>Quote</label><textarea id="testimonialQuote" required></textarea></div>
+      <div class="field">
+        <label>Image</label>
+        <div class="field-file" id="testimonialFileTrigger">
+          <span id="testimonialFileLabel">Click to choose an image</span>
+          <input type="file" id="testimonialFile" accept="image/*"/>
+        </div>
+        <div class="file-status" id="testimonialFileStatus"></div>
+        <div class="img-preview" id="testimonialImgPreview"></div>
+        <input type="hidden" id="testimonialImageUrl"/>
+      </div>
+      <div class="modal-error" id="testimonialModalError"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" id="testimonialCancelBtn">Cancel</button>
+        <button type="submit" class="btn-save" id="testimonialSaveBtn">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== SERVICE MODAL ===================== -->
+<div class="modal-overlay" id="serviceModal">
+  <div class="modal">
+    <h3 id="serviceModalTitle">Add Service</h3>
+    <form id="serviceForm">
+      <input type="hidden" id="serviceId"/>
+      <div class="field"><label>Name</label><input type="text" id="serviceName" required/></div>
+      <div class="field"><label>Description</label><textarea id="serviceDescription" required></textarea></div>
+      <div class="modal-error" id="serviceModalError"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" id="serviceCancelBtn">Cancel</button>
+        <button type="submit" class="btn-save" id="serviceSaveBtn">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API_BASE = "http://127.0.0.1:5000";
+const token = localStorage.getItem("stasha_admin_token");
+
+// Redirect to login if no token exists at all
+if (!token) {
+  window.location.href = "login.html";
+}
+
+function authHeaders(extra = {}) {
+  return { "Authorization": `Bearer ${token}`, ...extra };
+}
+
+function showToast(msg) {
+  const toast = document.getElementById("toast");
+  toast.textContent = msg;
+  toast.classList.add("visible");
+  setTimeout(() => toast.classList.remove("visible"), 2500);
+}
+
+// If any API call returns 401, the token is invalid/expired — send back to login
+async function apiFetch(url, options = {}) {
+  const res = await fetch(url, options);
+  if (res.status === 401) {
+    localStorage.removeItem("stasha_admin_token");
+    window.location.href = "login.html";
+    throw new Error("Session expired");
+  }
+  return res;
+}
+
+/* ---------- Logout ---------- */
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  localStorage.removeItem("stasha_admin_token");
+  window.location.href = "login.html";
+});
+
+/* ---------- Tabs ---------- */
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(`panel-${btn.dataset.tab}`).classList.add("active");
+  });
+});
+
+/* ================= PORTFOLIO SECTION ================= */
+
+const portfolioGrid = document.getElementById("portfolioGrid");
+const portfolioModal = document.getElementById("portfolioModal");
+const portfolioForm = document.getElementById("portfolioForm");
+const portfolioModalTitle = document.getElementById("portfolioModalTitle");
+const portfolioModalError = document.getElementById("portfolioModalError");
+const portfolioSaveBtn = document.getElementById("portfolioSaveBtn");
+
+async function loadPortfolio() {
+  const res = await apiFetch(`${API_BASE}/api/portfolio/`);
+  const items = await res.json();
+
+  if (items.length === 0) {
+    portfolioGrid.innerHTML = `<div class="empty-state">No portfolio projects yet — click "Add Project" to create your first one.</div>`;
+    return;
+  }
+
+  portfolioGrid.innerHTML = items.map(item => `
+    <div class="item-card">
+      <div class="item-thumb" style="background-image:url('${item.image_url}')"></div>
+      <div class="item-body">
+        <div class="item-title">${item.title}</div>
+        <div class="item-sub">${item.category} · ${item.year}</div>
+        <div class="item-actions">
+          <button class="edit-btn" onclick="openPortfolioModal(${item.id})">Edit</button>
+          <button class="delete-btn" onclick="deletePortfolioItem(${item.id})">Delete</button>
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
+let portfolioCache = [];
+async function refreshPortfolioCache() {
+  const res = await apiFetch(`${API_BASE}/api/portfolio/`);
+  portfolioCache = await res.json();
+}
+
+function openPortfolioModal(id = null) {
+  portfolioForm.reset();
+  portfolioModalError.classList.remove("visible");
+  document.getElementById("portfolioImgPreview").style.display = "none";
+  document.getElementById("portfolioFileLabel").textContent = "Click to choose an image";
+  document.getElementById("portfolioFileStatus").textContent = "";
+  document.getElementById("portfolioImageUrl").value = "";
+  document.getElementById("portfolioId").value = "";
+
+  if (id) {
+    const item = portfolioCache.find(p => p.id === id);
+    portfolioModalTitle.textContent = "Edit Portfolio Project";
+    document.getElementById("portfolioId").value = item.id;
+    document.getElementById("portfolioTitle").value = item.title;
+    document.getElementById("portfolioCategory").value = item.category;
+    document.getElementById("portfolioYear").value = item.year;
+    document.getElementById("portfolioImageUrl").value = item.image_url;
+    const preview = document.getElementById("portfolioImgPreview");
+    preview.style.backgroundImage = `url('${item.image_url}')`;
+    preview.style.display = "block";
+  } else {
+    portfolioModalTitle.textContent = "Add Portfolio Project";
+  }
+
+  portfolioModal.classList.add("visible");
+}
+
+document.getElementById("addPortfolioBtn").addEventListener("click", async () => {
+  await refreshPortfolioCache();
+  openPortfolioModal();
+});
+
+document.getElementById("portfolioCancelBtn").addEventListener("click", () => {
+  portfolioModal.classList.remove("visible");
+});
+
+// Image upload handling
+document.getElementById("portfolioFileTrigger").addEventListener("click", () => {
+  document.getElementById("portfolioFile").click();
+});
+
+document.getElementById("portfolioFile").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  document.getElementById("portfolioFileStatus").textContent = "Uploading...";
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const res = await apiFetch(`${API_BASE}/api/upload/`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: formData
+    });
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || "Upload failed");
+
+    document.getElementById("portfolioImageUrl").value = data.image_url;
+    document.getElementById("portfolioFileLabel").textContent = file.name;
+    document.getElementById("portfolioFileStatus").textContent = "Uploaded ✓";
+    const preview = document.getElementById("portfolioImgPreview");
+    preview.style.backgroundImage = `url('${data.image_url}')`;
+    preview.style.display = "block";
+  } catch (err) {
+    document.getElementById("portfolioFileStatus").textContent = "Upload failed — try again.";
+  }
+});
+
+// Save (create or update)
+portfolioForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  portfolioModalError.classList.remove("visible");
+
+  const id = document.getElementById("portfolioId").value;
+  const imageUrl = document.getElementById("portfolioImageUrl").value;
+
+  if (!imageUrl) {
+    portfolioModalError.textContent = "Please upload an image before saving.";
+    portfolioModalError.classList.add("visible");
+    return;
+  }
+
+  const payload = {
+    title: document.getElementById("portfolioTitle").value,
+    category: document.getElementById("portfolioCategory").value,
+    year: parseInt(document.getElementById("portfolioYear").value),
+    image_url: imageUrl
+  };
+
+  portfolioSaveBtn.disabled = true;
+  portfolioSaveBtn.textContent = "Saving...";
+
+  try {
+    const url = id ? `${API_BASE}/api/portfolio/${id}` : `${API_BASE}/api/portfolio/`;
+    const method = id ? "PUT" : "POST";
+
+    const res = await apiFetch(url, {
+      method,
+      headers: authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Save failed");
+
+    portfolioModal.classList.remove("visible");
+    showToast(id ? "Project updated" : "Project added");
+    loadPortfolio();
+  } catch (err) {
+    portfolioModalError.textContent = err.message;
+    portfolioModalError.classList.add("visible");
+  } finally {
+    portfolioSaveBtn.disabled = false;
+    portfolioSaveBtn.textContent = "Save";
+  }
+});
+
+async function deletePortfolioItem(id) {
+  if (!confirm("Delete this portfolio project? This can't be undone.")) return;
+
+  try {
+    const res = await apiFetch(`${API_BASE}/api/portfolio/${id}`, {
+      method: "DELETE",
+      headers: authHeaders()
+    });
+    if (!res.ok) throw new Error("Delete failed");
+    showToast("Project deleted");
+    loadPortfolio();
+  } catch (err) {
+    showToast("Failed to delete — try again.");
+  }
+}
+
+// Initial load
+loadPortfolio();
+
+/* ================= TESTIMONIALS SECTION ================= */
+
+const testimonialsGrid = document.getElementById("testimonialsGrid");
+const testimonialModal = document.getElementById("testimonialModal");
+const testimonialForm = document.getElementById("testimonialForm");
+const testimonialModalTitle = document.getElementById("testimonialModalTitle");
+const testimonialModalError = document.getElementById("testimonialModalError");
+const testimonialSaveBtn = document.getElementById("testimonialSaveBtn");
+let testimonialsCache = [];
+
+async function loadTestimonials() {
+  const res = await apiFetch(`${API_BASE}/api/testimonials/`);
+  testimonialsCache = await res.json();
+
+  if (testimonialsCache.length === 0) {
+    testimonialsGrid.innerHTML = `<div class="empty-state">No testimonials yet — click "Add Testimonial" to create the first one.</div>`;
+    return;
+  }
+
+  testimonialsGrid.innerHTML = testimonialsCache.map(item => `
+    <div class="item-card">
+      <div class="item-thumb" style="background-image:url('${item.image_url}')"></div>
+      <div class="item-body">
+        <div class="item-title">${item.client_name}</div>
+        <div class="item-sub">${item.role_location || ""}</div>
+        <div class="item-actions">
+          <button class="edit-btn" onclick="openTestimonialModal(${item.id})">Edit</button>
+          <button class="delete-btn" onclick="deleteTestimonial(${item.id})">Delete</button>
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function openTestimonialModal(id = null) {
+  testimonialForm.reset();
+  testimonialModalError.classList.remove("visible");
+  document.getElementById("testimonialImgPreview").style.display = "none";
+  document.getElementById("testimonialFileLabel").textContent = "Click to choose an image";
+  document.getElementById("testimonialFileStatus").textContent = "";
+  document.getElementById("testimonialImageUrl").value = "";
+  document.getElementById("testimonialId").value = "";
+
+  if (id) {
+    const item = testimonialsCache.find(t => t.id === id);
+    testimonialModalTitle.textContent = "Edit Testimonial";
+    document.getElementById("testimonialId").value = item.id;
+    document.getElementById("testimonialClientName").value = item.client_name;
+    document.getElementById("testimonialRoleLocation").value = item.role_location || "";
+    document.getElementById("testimonialProjectType").value = item.project_type || "";
+    document.getElementById("testimonialQuote").value = item.quote;
+    document.getElementById("testimonialImageUrl").value = item.image_url;
+    const preview = document.getElementById("testimonialImgPreview");
+    preview.style.backgroundImage = `url('${item.image_url}')`;
+    preview.style.display = "block";
+  } else {
+    testimonialModalTitle.textContent = "Add Testimonial";
+  }
+
+  testimonialModal.classList.add("visible");
+}
+
+document.getElementById("addTestimonialBtn").addEventListener("click", async () => {
+  await loadTestimonials();
+  openTestimonialModal();
+});
+
+document.getElementById("testimonialCancelBtn").addEventListener("click", () => {
+  testimonialModal.classList.remove("visible");
+});
+
+document.getElementById("testimonialFileTrigger").addEventListener("click", () => {
+  document.getElementById("testimonialFile").click();
+});
+
+document.getElementById("testimonialFile").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  document.getElementById("testimonialFileStatus").textContent = "Uploading...";
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const res = await apiFetch(`${API_BASE}/api/upload/`, {
+      method: "POST", headers: authHeaders(), body: formData
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Upload failed");
+
+    document.getElementById("testimonialImageUrl").value = data.image_url;
+    document.getElementById("testimonialFileLabel").textContent = file.name;
+    document.getElementById("testimonialFileStatus").textContent = "Uploaded ✓";
+    const preview = document.getElementById("testimonialImgPreview");
+    preview.style.backgroundImage = `url('${data.image_url}')`;
+    preview.style.display = "block";
+  } catch (err) {
+    document.getElementById("testimonialFileStatus").textContent = "Upload failed — try again.";
+  }
+});
+
+testimonialForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  testimonialModalError.classList.remove("visible");
+
+  const id = document.getElementById("testimonialId").value;
+  const imageUrl = document.getElementById("testimonialImageUrl").value;
+
+  if (!imageUrl) {
+    testimonialModalError.textContent = "Please upload an image before saving.";
+    testimonialModalError.classList.add("visible");
+    return;
+  }
+
+  const payload = {
+    client_name: document.getElementById("testimonialClientName").value,
+    role_location: document.getElementById("testimonialRoleLocation").value,
+    project_type: document.getElementById("testimonialProjectType").value,
+    quote: document.getElementById("testimonialQuote").value,
+    image_url: imageUrl
+  };
+
+  testimonialSaveBtn.disabled = true;
+  testimonialSaveBtn.textContent = "Saving...";
+
+  try {
+    const url = id ? `${API_BASE}/api/testimonials/${id}` : `${API_BASE}/api/testimonials/`;
+    const method = id ? "PUT" : "POST";
+
+    const res = await apiFetch(url, {
+      method,
+      headers: authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Save failed");
+
+    testimonialModal.classList.remove("visible");
+    showToast(id ? "Testimonial updated" : "Testimonial added");
+    loadTestimonials();
+  } catch (err) {
+    testimonialModalError.textContent = err.message;
+    testimonialModalError.classList.add("visible");
+  } finally {
+    testimonialSaveBtn.disabled = false;
+    testimonialSaveBtn.textContent = "Save";
+  }
+});
+
+async function deleteTestimonial(id) {
+  if (!confirm("Delete this testimonial? This can't be undone.")) return;
+  try {
+    const res = await apiFetch(`${API_BASE}/api/testimonials/${id}`, {
+      method: "DELETE", headers: authHeaders()
+    });
+    if (!res.ok) throw new Error("Delete failed");
+    showToast("Testimonial deleted");
+    loadTestimonials();
+  } catch (err) {
+    showToast("Failed to delete — try again.");
+  }
+}
+
+/* ================= SERVICES SECTION ================= */
+
+const servicesGrid = document.getElementById("servicesGrid");
+const serviceModal = document.getElementById("serviceModal");
+const serviceForm = document.getElementById("serviceForm");
+const serviceModalTitle = document.getElementById("serviceModalTitle");
+const serviceModalError = document.getElementById("serviceModalError");
+const serviceSaveBtn = document.getElementById("serviceSaveBtn");
+let servicesCache = [];
+
+async function loadServices() {
+  const res = await apiFetch(`${API_BASE}/api/services/`);
+  servicesCache = await res.json();
+
+  if (servicesCache.length === 0) {
+    servicesGrid.innerHTML = `<div class="empty-state">No services yet — click "Add Service" to create the first one.</div>`;
+    return;
+  }
+
+  servicesGrid.innerHTML = servicesCache.map(item => `
+    <div class="item-card">
+      <div class="item-body">
+        <div class="item-title">${item.name}</div>
+        <div class="item-sub" style="color:var(--text-muted);text-transform:none;letter-spacing:0;font-size:0.8rem;margin-bottom:0.8rem;">${item.description}</div>
+        <div class="item-actions">
+          <button class="edit-btn" onclick="openServiceModal(${item.id})">Edit</button>
+          <button class="delete-btn" onclick="deleteService(${item.id})">Delete</button>
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function openServiceModal(id = null) {
+  serviceForm.reset();
+  serviceModalError.classList.remove("visible");
+  document.getElementById("serviceId").value = "";
+
+  if (id) {
+    const item = servicesCache.find(s => s.id === id);
+    serviceModalTitle.textContent = "Edit Service";
+    document.getElementById("serviceId").value = item.id;
+    document.getElementById("serviceName").value = item.name;
+    document.getElementById("serviceDescription").value = item.description;
+  } else {
+    serviceModalTitle.textContent = "Add Service";
+  }
+
+  serviceModal.classList.add("visible");
+}
+
+document.getElementById("addServiceBtn").addEventListener("click", async () => {
+  await loadServices();
+  openServiceModal();
+});
+
+document.getElementById("serviceCancelBtn").addEventListener("click", () => {
+  serviceModal.classList.remove("visible");
+});
+
+serviceForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  serviceModalError.classList.remove("visible");
+
+  const id = document.getElementById("serviceId").value;
+  const payload = {
+    name: document.getElementById("serviceName").value,
+    description: document.getElementById("serviceDescription").value
+  };
+
+  serviceSaveBtn.disabled = true;
+  serviceSaveBtn.textContent = "Saving...";
+
+  try {
+    const url = id ? `${API_BASE}/api/services/${id}` : `${API_BASE}/api/services/`;
+    const method = id ? "PUT" : "POST";
+
+    const res = await apiFetch(url, {
+      method,
+      headers: authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Save failed");
+
+    serviceModal.classList.remove("visible");
+    showToast(id ? "Service updated" : "Service added");
+    loadServices();
+  } catch (err) {
+    serviceModalError.textContent = err.message;
+    serviceModalError.classList.add("visible");
+  } finally {
+    serviceSaveBtn.disabled = false;
+    serviceSaveBtn.textContent = "Save";
+  }
+});
+
+async function deleteService(id) {
+  if (!confirm("Delete this service? This can't be undone.")) return;
+  try {
+    const res = await apiFetch(`${API_BASE}/api/services/${id}`, {
+      method: "DELETE", headers: authHeaders()
+    });
+    if (!res.ok) throw new Error("Delete failed");
+    showToast("Service deleted");
+    loadServices();
+  } catch (err) {
+    showToast("Failed to delete — try again.");
+  }
+}
+
+/* ================= SITE CONTENT SECTION (Hero / About / Settings) ================= */
+
+async function loadHero() {
+  const res = await apiFetch(`${API_BASE}/api/content/hero`);
+  const data = await res.json();
+  document.getElementById("heroHeadline").value = data.headline || "";
+  document.getElementById("heroSubheadline").value = data.subheadline || "";
+  document.getElementById("heroVideoUrl").value = data.video_url || "";
+  document.getElementById("heroYears").value = data.years_count || "";
+  document.getElementById("heroProjects").value = data.projects_count || "";
+  document.getElementById("heroSatisfaction").value = data.satisfaction_pct || "";
+}
+
+document.getElementById("heroForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const payload = {
+    headline: document.getElementById("heroHeadline").value,
+    subheadline: document.getElementById("heroSubheadline").value,
+    video_url: document.getElementById("heroVideoUrl").value,
+    years_count: document.getElementById("heroYears").value,
+    projects_count: document.getElementById("heroProjects").value,
+    satisfaction_pct: document.getElementById("heroSatisfaction").value
+  };
+  try {
+    const res = await apiFetch(`${API_BASE}/api/content/hero`, {
+      method: "PUT",
+      headers: authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error("Save failed");
+    showToast("Hero section updated");
+  } catch (err) {
+    showToast("Failed to save — try again.");
+  }
+});
+
+async function loadAbout() {
+  const res = await apiFetch(`${API_BASE}/api/content/about`);
+  const data = await res.json();
+  document.getElementById("aboutParagraph1").value = data.paragraph_1 || "";
+  document.getElementById("aboutParagraph2").value = data.paragraph_2 || "";
+  document.getElementById("aboutBadgeNumber").value = data.badge_number || "";
+  document.getElementById("aboutImageUrl").value = data.image_url || "";
+  if (data.image_url) {
+    const preview = document.getElementById("aboutImgPreview");
+    preview.style.backgroundImage = `url('${data.image_url}')`;
+    preview.style.display = "block";
+  }
+}
+
+document.getElementById("aboutFileTrigger").addEventListener("click", () => {
+  document.getElementById("aboutFile").click();
+});
+
+document.getElementById("aboutFile").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  document.getElementById("aboutFileStatus").textContent = "Uploading...";
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const res = await apiFetch(`${API_BASE}/api/upload/`, {
+      method: "POST", headers: authHeaders(), body: formData
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Upload failed");
+
+    document.getElementById("aboutImageUrl").value = data.image_url;
+    document.getElementById("aboutFileLabel").textContent = file.name;
+    document.getElementById("aboutFileStatus").textContent = "Uploaded ✓";
+    const preview = document.getElementById("aboutImgPreview");
+    preview.style.backgroundImage = `url('${data.image_url}')`;
+    preview.style.display = "block";
+  } catch (err) {
+    document.getElementById("aboutFileStatus").textContent = "Upload failed — try again.";
+  }
+});
+
+document.getElementById("aboutForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const payload = {
+    image_url: document.getElementById("aboutImageUrl").value,
+    paragraph_1: document.getElementById("aboutParagraph1").value,
+    paragraph_2: document.getElementById("aboutParagraph2").value,
+    badge_number: document.getElementById("aboutBadgeNumber").value
+  };
+  try {
+    const res = await apiFetch(`${API_BASE}/api/content/about`, {
+      method: "PUT",
+      headers: authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error("Save failed");
+    showToast("About section updated");
+  } catch (err) {
+    showToast("Failed to save — try again.");
+  }
+});
+
+async function loadSettings() {
+  const res = await apiFetch(`${API_BASE}/api/content/settings`);
+  const data = await res.json();
+  document.getElementById("settingsBookingUrl").value = data.booking_url || "";
+  document.getElementById("settingsFooterTagline").value = data.footer_tagline || "";
+  document.getElementById("settingsInstagram").value = data.instagram_url || "";
+  document.getElementById("settingsPinterest").value = data.pinterest_url || "";
+  document.getElementById("settingsLinkedin").value = data.linkedin_url || "";
+}
+
+document.getElementById("settingsForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const payload = {
+    booking_url: document.getElementById("settingsBookingUrl").value,
+    footer_tagline: document.getElementById("settingsFooterTagline").value,
+    instagram_url: document.getElementById("settingsInstagram").value,
+    pinterest_url: document.getElementById("settingsPinterest").value,
+    linkedin_url: document.getElementById("settingsLinkedin").value
+  };
+  try {
+    const res = await apiFetch(`${API_BASE}/api/content/settings`, {
+      method: "PUT",
+      headers: authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error("Save failed");
+    showToast("Settings updated");
+  } catch (err) {
+    showToast("Failed to save — try again.");
+  }
+});
+
+// Load testimonials, services, and content on tab click (lazy load, not all upfront)
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    if (btn.dataset.tab === "testimonials") loadTestimonials();
+    if (btn.dataset.tab === "services") loadServices();
+    if (btn.dataset.tab === "content") { loadHero(); loadAbout(); loadSettings(); }
+  });
+});
+</script>
+
+</body>
+</html>
